@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import openai
-from langchain_together import Together
+# from langchain_together import Together
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 MAX_ATTEMPTS = 5
@@ -21,34 +21,51 @@ class Chatgpt(Model_Wrapper):
         openai.api_key = self.__key
         self.model_name = model_name
     
+    # def _summarize(self, text, summary_token_size):
+    #     print("Using ChatGPT to summarize the text...")
+    #     prompt = f"Summarize the following news within {summary_token_size} tokens:\n{text}\nSummary:"
+    #     response = openai.ChatCompletion.create(
+    #         model=self.model_name,
+    #         messages=[
+    #             {"role": "system", "content": "You are a helpful assistant."},
+    #             {"role": "user", "content": prompt},
+    #         ]
+    #     )
+    #     summary = response['choices'][0]['message']['content']
+    #     return summary
+    
     def _summarize(self, text, summary_token_size):
         prompt = f"Summarize the following news within {summary_token_size} tokens:\n{text}\nSummary:"
-        response = openai.ChatCompletion.create(
+        
+        client = openai.OpenAI(api_key=self.__key)
+        
+        response = client.chat.completions.create(
             model=self.model_name,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt},
             ]
         )
-        summary = response['choices'][0]['message']['content']
+        summary = response.choices[0].message.content
         return summary
+
     
-class Together(Model_Wrapper):
-    def __init__(self, key, model_name):
-        self.__key = key
-        self.model_name = model_name
+# class Together(Model_Wrapper):
+#     def __init__(self, key, model_name):
+#         self.__key = key
+#         self.model_name = model_name
         
-        self.llm = Together(
-            model=self.model_name,
-            temperature=0.7,
-            max_tokens=200,
-            top_k=1,
-            together_api_key=self.__key,
-        )
+#         self.llm = Together(
+#             model=self.model_name,
+#             temperature=0.7,
+#             max_tokens=200,
+#             top_k=1,
+#             together_api_key=self.__key,
+#         )
         
-    def _summarize(self, text, summary_token_size):
-        prompt = f"Summarize the following news within {summary_token_size} tokens:\n{text}\nSummary:"
-        return self.llm.invoke(prompt)
+#     def _summarize(self, text, summary_token_size):
+#         prompt = f"Summarize the following news within {summary_token_size} tokens:\n{text}\nSummary:"
+#         return self.llm.invoke(prompt)
     
 class Dummy(Model_Wrapper):
     '''
@@ -70,13 +87,14 @@ class Dummy(Model_Wrapper):
 class Model_Factory:
     registered_model_class = ("chatgpt", 'together', 'dummy')
     @classmethod
-    def create_model(cls, model_class:str, key:str = None, model_name:str = None, *args, **kwargs)->(Chatgpt | Together):
+    # def create_model(cls, model_class:str, key:str = None, model_name:str = None, *args, **kwargs)->(Chatgpt | Together):
+    def create_model(cls, model_class:str, key:str = None, model_name:str = None, *args, **kwargs)->(Chatgpt):
         assert model_class in cls.registered_model_class, f"Invalid model class name: choose one from {cls.registered_model_class}"
         match model_class:
             case "chatgpt":
                 return Chatgpt(key, model_name)
-            case "together":
-                return Together(key, model_name)
+            # case "together":
+            #     return Together(key, model_name)
             case "dummy":
                 return Dummy()
             case _:

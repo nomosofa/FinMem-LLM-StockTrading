@@ -10,8 +10,9 @@ import threading
 
 model = \
 Model_Factory.create_model('chatgpt',
-                           key='API_KEY',
-                           model_name="gpt-3.5-turbo-16k-0613")
+                           key='your_openai_api_key',
+                           model_name="gpt-3.5-turbo")
+                        #    model_name="gpt-3.5-turbo-16k-0613")
 # model = Model_Factory.create_model('dummy')
 
 '''
@@ -23,6 +24,7 @@ print(model.summarize(test_news))
 exit()
 '''
 summary = model.summarize
+
 def process_row(row, lock, df, df_name):
     # Perform summary on the 'body' column for news and 'content' column for 10k10q
     result = summary(row['body'])
@@ -52,9 +54,10 @@ def parallel_summary(df, df_name):
     return df_copy
 
 
-SOURCE_PATH = "/home/hfsladmin/Projects/finmem/Cleaaned_Data"
-DEST_PATH = "/home/hfsladmin/Projects/finmem/add_summary_data"
-TEMP_PATH = "/home/hfsladmin/Projects/finmem/add_summary_data_tmp"
+# SOURCE_PATH = "/home/hfsladmin/Projects/finmem/Cleaaned_Data"
+SOURCE_PATH = "/finmem/data-pipeline/Fake-Sample-Data/example_input/Fake-News-Data-for-Each-Stock"  # Path to the source directory containing CSV files
+DEST_PATH = "/finmem/data-pipeline/Fake-Sample-Data/03_output"
+TEMP_PATH = "/finmem/data-pipeline/Fake-Sample-Data/03_output_tmp"
 
 
 def process_main(file):
@@ -66,13 +69,17 @@ def process_main(file):
         ret.to_csv(os.path.join(DEST_PATH, file))
         print(f"New DF dumpped to {os.path.join(DEST_PATH, file)}")
 
+# file_ls = ['cleaned_DIS2021-08-01-2023-05-30.csv',
+#            'cleaned_MRNA2021-08-01-2023-05-30.csv',
+#            'cleaned_PFE2021-08-01-2023-05-30.csv',
+#            'cleaned_NVDA2021-08-01-2023-05-30.csv',
+#            'cleaned_GM2021-08-01-2023-05-30.csv','cleaned_BAC2021-08-01-2023-05-30.csv',
+#            'cleaned_CVX2021-08-01-2023-05-30.csv','cleaned_XOM2021-08-01-2023-05-30.csv','cleaned_WMT2021-08-01-2023-05-30.csv','cleaned_JPM2021-08-01-2023-05-30.csv','cleaned_MS2021-08-01-2023-05-30.csv','cleaned_JNJ2021-08-01-2023-05-30.csv','cleaned_MRK2021-08-01-2023-05-30.csv','cleaned_F2021-08-01-2023-05-30.csv','cleaned_C2021-08-01-2023-05-30.csv','cleaned_GS2021-08-01-2023-05-30.csv']
 
-file_ls = ['cleaned_DIS2021-08-01-2023-05-30.csv',
-           'cleaned_MRNA2021-08-01-2023-05-30.csv',
-           'cleaned_PFE2021-08-01-2023-05-30.csv',
-           'cleaned_NVDA2021-08-01-2023-05-30.csv',
-           'cleaned_GM2021-08-01-2023-05-30.csv','cleaned_BAC2021-08-01-2023-05-30.csv',
-           'cleaned_CVX2021-08-01-2023-05-30.csv','cleaned_XOM2021-08-01-2023-05-30.csv','cleaned_WMT2021-08-01-2023-05-30.csv','cleaned_JPM2021-08-01-2023-05-30.csv','cleaned_MS2021-08-01-2023-05-30.csv','cleaned_JNJ2021-08-01-2023-05-30.csv','cleaned_MRK2021-08-01-2023-05-30.csv','cleaned_F2021-08-01-2023-05-30.csv','cleaned_C2021-08-01-2023-05-30.csv','cleaned_GS2021-08-01-2023-05-30.csv']
+file_ls = ['AMZN_fake.csv',
+           'MSFT_fake.csv',
+           'NFLX_fake.csv',
+           'TSLA_fake.csv']
 
 for file in file_ls:
     process_main(file)

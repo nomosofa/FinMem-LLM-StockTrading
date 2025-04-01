@@ -3,6 +3,8 @@
 # !pip install fastparquet
 # You may need a VPN to connect to Yahoo Finance
 
+import os
+import pyarrow
 import glob
 import pickle
 import datetime
@@ -15,21 +17,53 @@ def download_data(path: str, start_day: str, end_day: str, tickers: List[str]) -
     df_list = []
     for ticker in tickers:
         print(f'Downloading data for {ticker}')
-        data = yf.download(ticker, start=start_day, end=end_day)
+        data = yf.download(ticker, start=start_day, end=end_day, auto_adjust=False)
         data = data.reset_index()
         data['Date'] = data['Date'].dt.date
         data = data[['Date', 'Adj Close']]
         data = data.rename(columns={'Date': 'date', 'Adj Close': ticker})
         df_list.append(data)
+    print(f'Download complete for tickers: {tickers}')
     return df_list
 
 def combine_dataframes(df_list: List[pd.DataFrame], path: str, tickers: List[str]) -> dict:
     """Combines dataframes of different tickers into a single dictionary and saves it as a pickle file."""
+    # cleaned_dfs = []
+    # for df, ticker in zip(df_list, tickers):
+    #     df = df[['date', ticker]]
+    #     cleaned_dfs.append(df)
+    # # print(cleaned_dfs[0])
+    # # print(cleaned_dfs[0]['date'])
+    # # print(cleaned_dfs[0]['AMZN'])
+
+    # combined_dict = {}
+    # # desired output format:
+    # # 2016-01-13: {'price': {'TSLA': 13.354000091552734, 'NFLX': 106.55999755859375, 'AMZN': 29.090499877929688, 'MSFT': 45.89070510864258}}
+    # for df, ticker in zip(cleaned_dfs, tickers):
+    #     # Iterate over each row in the dataframe
+    #     for index, row in df.iterrows():
+    #         date = row['date']
+    #         price = row[ticker]
+    #         print(date)
+    #         print(price)
+    #         if date not in combined_dict:
+    #             combined_dict[date] = {'price': {}}
+    #         # Add the price for the current ticker to the dictionary
+    #         combined_dict[date]['price'][ticker] = price
+    
+    # Ensure the directory exists
+    # print(combined_dict)
+
     df_dicts = [dict(zip(df['date'], df[ticker])) for df, ticker in zip(df_list, tickers)]
     combined_dict = {date: {'price': {}} for df_dict in df_dicts for date in df_dict}
     for i, df_dict in enumerate(df_dicts):
         for date, price in df_dict.items():
             combined_dict[date]['price'][tickers[i]] = price
+
+    # load from the pickle file to verify
+    with open('/finmem/data-pipeline/Fake-Sample-Data/example_output/price.pkl', 'rb') as file:
+        combined_dict = pickle.load(file)
+
     pkl_filename = path + 'price.pkl'
     with open(pkl_filename, 'wb') as file:
         pickle.dump(combined_dict, file)
@@ -110,14 +144,23 @@ def process_filing_data(start_day: str, end_day: str, kq_path: str, filing_data:
     return nested_10q,nested_10k
     
 if __name__ == '__main__':
-    base_path = '/home/yyu/YJ'
-    price_path = '/home/yyu/YJ/price/'
-    news_path = '/home/yyu/YJ/add_summary_data/'
-    kq_path = '/home/yyu/YJ/10k10q/'
-    filing_data = '/home/yyu/YJ/filing_data.parquet'
-    start_day = '2021-08-01'
-    end_day = '2023-06-01'
-    tickers = ['BAC', 'DIS', 'GM', 'MRNA', 'NVDA', 'PFE']
+    # base_path = '/home/yyu/YJ'
+    # price_path = '/home/yyu/YJ/price/'
+    # news_path = '/home/yyu/YJ/add_summary_data/'
+    # kq_path = '/home/yyu/YJ/10k10q/'
+    # filing_data = '/home/yyu/YJ/filing_data.parquet'
+
+    base_path = '/finmem/data-pipeline/Fake-Sample-Data/04_output'
+    price_path = f'{base_path}/'  # Path to save price data
+    news_path = '/finmem/data-pipeline/Fake-Sample-Data/03_output/'  # Path to save news data
+    kq_path = f'{base_path}/'  # Path to save filing data
+    filing_data = '/finmem/data-pipeline/Fake-Sample-Data/example_input/filing_data.parquet'  # Path to the input parquet file
+
+    start_day = '2016-01-13'
+    end_day = '2017-12-27'
+    # tickers = ['BAC', 'DIS', 'GM', 'MRNA', 'NVDA', 'PFE']
+    # tickers = ['AMZN', 'MSFT', 'NFLX', 'TSLA']
+    tickers = ['AMZN', 'MSFT', 'NFLX']
     csv_files_pattern = '*.csv'
     col_name = 'summary'
 

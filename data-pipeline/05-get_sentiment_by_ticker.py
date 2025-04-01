@@ -20,13 +20,16 @@ def subset_symbol_dict(input_dir, cur_symbol):
     # # print(data[datetime.date(2023, 5, 17)][2])
     # # print(data[datetime.date(2023, 5, 17)][3])
     # print(data[datetime.date(2023, 5, 17)][0]['price'].keys())
+    # print('=====================================================')
+    # print(data[datetime.date(2017, 12, 11)])
+    # print('=====================================================')
     new_dict = {}
     ticker_dict_byDate = {}
     for k, v in tqdm(data.items()):
         cur_price = v[0]['price']  # price
         cur_news = v[1]['news']   # news
-        cur_filing_q = v[2]['filling_q']  # form q
-        cur_filing_k = v[3]['filling_k']  # form k
+        cur_filing_q = v[2]['filing_q']  # form q
+        cur_filing_k = v[3]['filing_k']  # form k
         # print('Date: ---------', k)
         # print('Available tickers: ---------',cur_news.keys())
 
@@ -63,6 +66,9 @@ model = BertForSequenceClassification.from_pretrained('yiyanghkust/finbert-tone'
 
 # Function to analyze sentiment
 def sentiment_score(text):
+    if not isinstance(text, str):
+        text = str(text) if text is not None else ""
+
     inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True)
     outputs = model(**inputs)
     scores = torch.nn.functional.softmax(outputs.logits, dim=-1)
@@ -129,22 +135,28 @@ def assign_vader_scores(new_dict, cur_symbol):
 def export_sub_symbol(cur_symbol_lst, senti_model_type):
     print('Ticker list: ------', cur_symbol_lst)
     for cur_symbol_0 in cur_symbol_lst:
+        print(cur_symbol_0)
         new_dict, ticker_dict_byDate = subset_symbol_dict(input_dir, cur_symbol_0)
         
         if senti_model_type == 'FinBERT':
             assign_finBERT_scores(new_dict, cur_symbol_0)
-            print('finBERT Date" 2023-05-30: ----- ', new_dict[datetime.date(2023, 5, 30)]['news'])
+            print('finBERT Date" 2023-05-30: ----- ', new_dict[datetime.date(2017, 12, 11)]['news'])
         else: 
             assign_vader_scores(new_dict, cur_symbol_0)   
-            print('vader Date" 2023-05-30: ----- ', new_dict[datetime.date(2023, 5, 30)]['news'])
+            print('vader Date" 2023-05-30: ----- ', new_dict[datetime.date(2017, 12, 11)]['news'])
     
-        out_dir = "./data/06_input/subset_symbols_"+ cur_symbol_0 + ".pkl"
+        # out_dir = "./data/06_input/subset_symbols_"+ cur_symbol_0 + ".pkl"
+        out_dir = output_dir + cur_symbol_0 + ".pkl"
         with open(out_dir, "wb") as f:
             pickle.dump(new_dict, f)
         print('*************---------------************')
     
     
-cur_symbol_lst = ['BAC', 'DIS', 'GM', 'MRNA', 'NVDA', 'PFE']
-input_dir = "./data/05_env_data/env_data.pkl"
+# cur_symbol_lst = ['BAC', 'DIS', 'GM', 'MRNA', 'NVDA', 'PFE']
+cur_symbol_lst = ['AMZN', 'MSFT', 'NFLX', 'TSLA']
+# input_dir = "./data/05_env_data/env_data.pkl"
+# input_dir = "/finmem/data-pipeline/Fake-Sample-Data/example_output/env_data.pkl"
+input_dir = "/finmem/data-pipeline/Fake-Sample-Data/04_output/env_data.pkl"
+output_dir = "/finmem/data-pipeline/Fake-Sample-Data/example_output/subset_symbols_3_"
 #### option = 'FinBERT' or 'Vader'
 export_sub_symbol(cur_symbol_lst, senti_model_type = 'FinBERT')

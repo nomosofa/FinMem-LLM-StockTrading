@@ -157,6 +157,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# macOS 系统文件
+*.DS_Store
+
 # others
 */.cog/
 __pycache__/
@@ -165,3 +168,11 @@ aws/
 awscliv2.zip
 weights/
 tgi_scripts/data/
+
+data/*
+!data/03_model_input/
+data/03_model_input/subset_symbols_3_AMZN.pkl
+
+data-pipeline/Fake-Sample-Data/
+
+/*.csv

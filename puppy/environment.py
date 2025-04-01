@@ -35,6 +35,9 @@ class MarketEnvironment:
         symbol: str,
     ) -> None:
         # validate structure
+        # Ensure env_data_pkl is not empty and validate the structure of the first record 
+        if len(env_data_pkl.keys()) == 0:
+            raise ValueError("env_data_pkl is empty, unable to proceed.")
         first_date = list(env_data_pkl.keys())[0]
         if not isinstance(first_date, date):
             raise TypeError("env_data_pkl keys must be date type")

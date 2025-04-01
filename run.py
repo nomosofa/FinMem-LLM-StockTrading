@@ -86,6 +86,10 @@ def sim_func(
     # create environment
     with open(market_data_info_path, "rb") as f:
         env_data_pkl = pickle.load(f)
+    # print("================================")  # for debugging purposes
+    # print(market_data_info_path)  # for debugging purposes, to see the path being used
+    # print(env_data_pkl.keys())  # for debugging purposes, to see the keys in the loaded data
+    # print("================================")  # for debugging purposes
     environment = MarketEnvironment(
         symbol=config["general"]["trading_symbol"],
         env_data_pkl=env_data_pkl,
