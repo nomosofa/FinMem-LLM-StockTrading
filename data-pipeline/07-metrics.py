@@ -15,8 +15,10 @@ def get_price(Start, End, Ticker):
     Returns:
     list: List of daily adjusted closing prices.
     """
-    df = yf.download(ticker, start=Start, end=End)
-    return df['Adj Close'].tolist()
+    df = yf.download(ticker, start=Start, end=End, auto_adjust=False)
+    adj_close_values = [x[0] for x in df['Adj Close'].values.tolist()]
+    return adj_close_values
+    # return df['Adj Close'].values.tolist()
 
 # Get actions for different models
 def get_action(start, end, ticker, file_path, col):
@@ -187,6 +189,7 @@ def main(ticker, start, end, df_paths, col_names, save_path):
             print('Standard Deviation of Daily Price Change Percentage of {0}: {1:.2%}'.format(ticker, std_dev_p))
         col = col_names[model]
         actions = get_action(start, end, ticker, file_path, col)
+        # print(len(price), len(actions))
         results[model] = calculate_metrics(price, actions)
 
     df_results = pd.DataFrame(results, index=metrics)
@@ -195,28 +198,32 @@ def main(ticker, start, end, df_paths, col_names, save_path):
 
 
 if __name__ == '__main__':
-    ticker = 'TSLA'
-    start_time = '2022-10-06'
-    end_time = '2023-04-10'
+    ticker = 'AMZN'
+    start_time = '2016-02-17'
+    end_time = '2016-03-17'
     
-    df_paths = {
-        'FinMe': '/Users/yuechenjiang/Desktop/CatMemo/result/Tsla-new-full.csv',
-        'Park': '/Users/yuechenjiang/Desktop/CatMemo/result/action_df_tsla_park_v2.csv',
-        'FinGPT': '/Users/yuechenjiang/Desktop/CatMemo/BenchMark/fingpt/tsla_curie.csv',
-        'A2C': '/Users/yuechenjiang/Desktop/CatMemo/result/TSLA_A2C_summary_data_seed2_full.csv',
-        'PPO': '/Users/yuechenjiang/Desktop/CatMemo/result/TSLA_PPO_summary_data_seed1_full.csv',
-        'DQN': '/Users/yuechenjiang/Desktop/CatMemo/result/TSLA_DQN_summary_data_seed1_full.csv'
-    }
-
-    col_names = {
-        'FinMe': ['date', 'direction'],
-        'Park': ['date', 'direction'],
-        'FinGPT': ['dates', 'actions'],
-        'A2C': ['date', 'action'],
-        'PPO': ['date', 'action'],
-        'DQN': ['date', 'action']
-    }
-
-    save_path = '/Users/yuechenjiang/Desktop/CatMemo/Final_result/metrics/TSLA.csv'
+    df_paths = {'FinMe': '/finmem/amzn_gpt3.5.csv'}
+    col_names = {'FinMe': ['date', 'direction']}
     
+    # df_paths = {
+    #     'FinMe': '/Users/yuechenjiang/Desktop/CatMemo/result/Tsla-new-full.csv',
+    #     'Park': '/Users/yuechenjiang/Desktop/CatMemo/result/action_df_tsla_park_v2.csv',
+    #     'FinGPT': '/Users/yuechenjiang/Desktop/CatMemo/BenchMark/fingpt/tsla_curie.csv',
+    #     'A2C': '/Users/yuechenjiang/Desktop/CatMemo/result/TSLA_A2C_summary_data_seed2_full.csv',
+    #     'PPO': '/Users/yuechenjiang/Desktop/CatMemo/result/TSLA_PPO_summary_data_seed1_full.csv',
+    #     'DQN': '/Users/yuechenjiang/Desktop/CatMemo/result/TSLA_DQN_summary_data_seed1_full.csv'
+    # }
+
+    # col_names = {
+    #     'FinMe': ['date', 'direction'],
+    #     'Park': ['date', 'direction'],
+    #     'FinGPT': ['dates', 'actions'],
+    #     'A2C': ['date', 'action'],
+    #     'PPO': ['date', 'action'],
+    #     'DQN': ['date', 'action']
+    # }
+
+    # save_path = '/Users/yuechenjiang/Desktop/CatMemo/Final_result/metrics/TSLA.csv'
+    save_path = '/finmem/AMZN_metrics.csv'  # Change this to your desired save path
+
     main(ticker, start_time, end_time, df_paths, col_names, save_path)
